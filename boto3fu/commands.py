@@ -8,7 +8,7 @@ from boto3fu import outputs
 logger = logging.getLogger(__name__)
 
 
-def get_eips(profile, region, output_format='table'):
+def get_eips(profile, region, boto_client_params, output_format='table'):
     """
     """
     if not profile:
@@ -16,7 +16,7 @@ def get_eips(profile, region, output_format='table'):
     if not region:
         region = [None]
 
-    clients = client_aggregator(profile, region, 'ec2')
+    clients = client_aggregator(profile, region, 'ec2', boto_client_params)
     eips = []
     for c in clients:
         eips.extend(boto3fu.list.eips.get_eips(c))

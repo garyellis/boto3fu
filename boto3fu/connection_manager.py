@@ -24,7 +24,7 @@ def get_client(profile_name, region_name, svc, boto_client_params={}):
     return client
 
 
-def client_aggregator(profiles, regions, svc, boto_client_params={}):
+def client_aggregator(profiles, regions, svc, boto_client_params):
     """
     Returns a list of boto3 clients from the input list
     """
@@ -32,7 +32,7 @@ def client_aggregator(profiles, regions, svc, boto_client_params={}):
         regions = ['us-west-1', 'us-west-2', 'us-east-1', 'us-east-2']
 
     clients = [
-        get_client(p, r, 'ec2', **boto_client_params)
+        get_client(p, r, 'ec2', boto_client_params)
         for p in profiles
         for r in regions
     ]

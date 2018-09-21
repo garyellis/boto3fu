@@ -21,5 +21,6 @@ def report_eips(ctx, output):
     get_eips(
         profile=ctx.obj["profile"],
         region=ctx.obj["region"],
-        output_format=output
+        boto_client_params=ctx.obj["boto_client_params"],
+        output_format=output,
     )

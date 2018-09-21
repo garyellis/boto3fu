@@ -22,9 +22,10 @@ from boto3fu.cli.list import list_group
     help='the aws region. Defaults to us-west-2'
 )
 @click.option(
-    '--verify-ssl',
-    required=False,
-    help='Disable hostname verify for corporate  proxies'
+    '--verify-ssl/--no-verify-ssl',
+    default=True,
+    envvar='BOTO3FU_VERIFY_SSL',
+    help='Disable hostname verify for man in the middle proxies'
 )
 @click.option(
     '--debug',
@@ -36,7 +37,7 @@ def cli(ctx, profile, region, verify_ssl, debug):
     ctx.obj = {
         "profile": profile,
         "region": region,
-        "verify_ssl": verify_ssl,
+        "boto_client_params": {"verify": verify_ssl},
         "debug": debug
     }
 
