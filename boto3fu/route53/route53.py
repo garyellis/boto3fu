@@ -38,7 +38,6 @@ def hosted_zone(record):
 def get_route53_zones(c):
     """
     """
-    client = c.GetClient()
     records = []
     paginator = client.get_paginator('list_hosted_zones')
     pages = paginator.paginate()
@@ -94,9 +93,9 @@ def get_resource_records(c, zone_names):
         _zone_names.append(name)
 
     records = []
-    zones = get_zones(client, _zone_names)
+    zones = get_zones(c, _zone_names)
     for zone in zones:
-        zone_records = list_resource_recordsets(client, zone['id'])
+        zone_records = list_resource_recordsets(c, zone['id'])
         for i in zone_records:
             i.update({"zone_id": zone['id'], "zone_name": zone['name']})
         records.extend(zone_records)
