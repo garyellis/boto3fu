@@ -23,9 +23,10 @@ def eip_address(address):
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_eips(client):
+def get_eips(c):
     """
     """
+    client = c.GetClient()
     addresses = []
     for i in client.describe_addresses()['Addresses']:
         addresses.append(eip_address(i))

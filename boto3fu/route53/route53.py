@@ -35,9 +35,10 @@ def hosted_zone(record):
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_route53_zones(client):
+def get_route53_zones(c):
     """
     """
+    client = c.GetClient()
     records = []
     paginator = client.get_paginator('list_hosted_zones')
     pages = paginator.paginate()
@@ -47,9 +48,10 @@ def get_route53_zones(client):
     return records
 
 
-def list_resource_recordsets(client, zone_id):
+def list_resource_recordsets(c, zone_id):
     """
     """
+    client = c.GetClient()
     records = []
     paginator = client.get_paginator('list_resource_record_sets')
     pages = paginator.paginate(HostedZoneId=zone_id)
@@ -58,9 +60,10 @@ def list_resource_recordsets(client, zone_id):
             records.append(resource_record(record))
     return records
 
-def get_zones(client, zone_names):
+def get_zones(c, zone_names):
     """
     """
+    client = c.GetClient()
     zones = []
     paginator = client.get_paginator('list_hosted_zones')
     pages = paginator.paginate()
@@ -77,10 +80,11 @@ def get_zones(client, zone_names):
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_resource_records(client, zone_names):
+def get_resource_records(c, zone_names):
     """
     """
 
+    client = c.GetClient()
     # make sure domain name ends with .
     _zone_names = []
     for i, name in enumerate(zone_names):
