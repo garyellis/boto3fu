@@ -1,25 +1,30 @@
+import os.path
 from boto3fu.common import helpers
 
 def resource_record(record):
     """
     """
-    alias_target_zone_id = ''
-    alias_target_dns_name = ''
-    alias_target_evaluate_health = ''
+    alias_target = ''
     if record.get("AliasTarget"):
-        alias_target_zone_id = record.get("AliasTarget")['HostedZoneId']
-        alias_target_dns_name = record.get("AliasTarget")['DNSName']
-        alias_target_evaluate_health = str(record.get("AliasTarget")['EvaluateTargetHealth'])
+        alias_target_dns_name = record.get("AliasTarget")['DNSName'] or None
+        alias_target_evaluate_health = str(record.get("AliasTarget")['EvaluateTargetHealth']) or None
+        alias_target = '|'.join([i for i in [alias_target_dns_name, alias_target_evaluate_health] if i])
+
+    resource_records = ''
+    if record.get("ResourceRecords"):
+        resource_records = "|".join([i["Value"] for i in record.get("ResourceRecords") if i])
 
     return {
         "name": record.get("Name") or '',
         "type": record.get("Type") or '',
         "ttl": record.get("TTL"),
+        "alias_target": alias_target,
+        "resource_records": resource_records,
         "region": record.get("Region"),
         "failover": record.get("Failover") or '',
-        "alias_target": '|'.join([i for i in [alias_target_zone_id, alias_target_dns_name, alias_target_evaluate_health]]),
-        "resource_records": "|".join([i["Value"] for i in record.get("ResourceRecords") or []])
-
+        "multivalueanswer": record.get("MultiValueAnswer") or '',
+        "healthcheck_id": record.get("HealthCheckId") or '',
+        "traffic_policy_instance_id": record.get("TrafficPolicyInstanceId") or ''
     }
 
 def hosted_zone(record):
@@ -38,6 +43,7 @@ def hosted_zone(record):
 def get_route53_zones(c):
     """
     """
+    client = c.GetClient()
     records = []
     paginator = client.get_paginator('list_hosted_zones')
     pages = paginator.paginate()
@@ -83,7 +89,6 @@ def get_resource_records(c, zone_names):
     """
     """
 
-    client = c.GetClient()
     # make sure domain name ends with .
     _zone_names = []
     for i, name in enumerate(zone_names):
@@ -95,8 +100,18 @@ def get_resource_records(c, zone_names):
     records = []
     zones = get_zones(c, _zone_names)
     for zone in zones:
+        zone_name = zone['name']
         zone_records = list_resource_recordsets(c, zone['id'])
         for i in zone_records:
-            i.update({"zone_id": zone['id'], "zone_name": zone['name']})
+
+            # extract the zone id only
+            zone_id = os.path.basename(zone['id'])
+
+            # where to set the zone apex flag
+            apex_alias = 'false'
+            if i["name"] == zone_name.rstrip('.'):
+                apex_alias = 'true'
+
+            i.update({"zone_id": zone_id, "zone_name": zone_name, 'apex_alias': apex_alias})
         records.extend(zone_records)
     return records
