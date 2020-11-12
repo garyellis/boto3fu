@@ -1,2 +1,5 @@
 setuptools
-
+boto3
+tabulate
+click
+pyyaml

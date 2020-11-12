@@ -4,27 +4,41 @@ from boto3fu.common import helpers
 def resource_record(record):
     """
     """
-    alias_target = ''
+    alias_target_dns_name = ''
+    alias_target_evaluate_health = ''
     if record.get("AliasTarget"):
         alias_target_dns_name = record.get("AliasTarget")['DNSName'] or None
         alias_target_evaluate_health = str(record.get("AliasTarget")['EvaluateTargetHealth']) or None
-        alias_target = '|'.join([i for i in [alias_target_dns_name, alias_target_evaluate_health] if i])
 
     resource_records = ''
     if record.get("ResourceRecords"):
         resource_records = "|".join([i["Value"] for i in record.get("ResourceRecords") if i])
 
+    r53_type = ''
+    if record.get("Weight") is not None:
+        r53_type = 'weighted'
+    elif record.get("Failover")is not None:
+        r53_type = 'failover'
+    elif record.get("SetIdentifier") is not None:
+        r53_type = 'latency'
+    else:
+        r53_type = 'simple'
+
     return {
         "name": record.get("Name") or '',
         "type": record.get("Type") or '',
         "ttl": record.get("TTL"),
-        "alias_target": alias_target,
+        "alias_target_dns_name": alias_target_dns_name,
+        "alias_target_evaluate_health": alias_target_evaluate_health,
         "resource_records": resource_records,
         "region": record.get("Region"),
         "failover": record.get("Failover") or '',
         "multivalueanswer": record.get("MultiValueAnswer") or '',
         "healthcheck_id": record.get("HealthCheckId") or '',
-        "traffic_policy_instance_id": record.get("TrafficPolicyInstanceId") or ''
+        "traffic_policy_instance_id": record.get("TrafficPolicyInstanceId") or '',
+        "weight": record.get("Weight") or '',
+        "set_identifier": record.get("SetIdentifier") or '',
+        "r53_type": r53_type
     }
 
 def hosted_zone(record):
