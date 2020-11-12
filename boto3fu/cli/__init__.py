@@ -1,7 +1,8 @@
 import click
 
 from boto3fu import __version__
-from boto3fu.cli.list import list_group
+from boto3fu.cli.vpc import vpc_group
+from boto3fu.cli.route53 import route53_group
 
 
 @click.group()
@@ -42,4 +43,5 @@ def cli(ctx, profile, region, verify_ssl, debug):
     }
 
 
-cli.add_command(list_group)
+cli.add_command(vpc_group)
+cli.add_command(route53_group)

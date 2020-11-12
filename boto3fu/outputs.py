@@ -9,10 +9,10 @@ import tabulate
 def to_table(items):
     """
     """
-    print tabulate.tabulate(
+    print(tabulate.tabulate(
         tabular_data=items,
         headers='keys'
-    )
+    ))
 
 
 def to_csv(content, filename, append=False, keys=[]):
@@ -39,7 +39,7 @@ def to_yaml(items, filename):
 
     opts = dict(default_flow_style=False, encoding='utf-8', allow_unicode=True)
     if not filename:
-        print yaml.safe_dump(data=i, stream=None, **opts)
+        print(yaml.safe_dump(data=i, stream=None, **opts))
     else:
         with open(filename, 'w') as s:
             yaml.safe_dump(data=i, stream=s, **opts)
@@ -49,7 +49,7 @@ def to_json(items, filename):
     """
     """
     if not filename:
-        print json.dumps(items)
+        print(json.dumps(items))
     else:
         with open(filename, 'w') as s:
             json.dump(items, filename)

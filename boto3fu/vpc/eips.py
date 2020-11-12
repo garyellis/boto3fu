@@ -1,4 +1,4 @@
-from boto3fu.list import helpers
+from boto3fu.common import helpers
 
 
 def get_instance(client, instance_id):
@@ -20,10 +20,13 @@ def eip_address(address):
         "public_ip": address.get("PublicIp")
     }
 
-
-def get_eips(client):
+@helpers.add_account_alias
+@helpers.add_account_num
+@helpers.add_client_region
+def get_eips(c):
     """
     """
+    client = c.GetClient()
     addresses = []
     for i in client.describe_addresses()['Addresses']:
         addresses.append(eip_address(i))
