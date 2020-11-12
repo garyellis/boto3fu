@@ -33,23 +33,18 @@ def hosted_zone(record):
     return {
         "id": record.get("Id") or '',
         "name": record.get("Name") or '',
-        "private_zone": record.get("Config")['PrivateZone'] or '',
+        "private_zone": record.get("Config")['PrivateZone'],
         "rrset_count": record.get("ResourceRecordSetCount") or ''
     }
 
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_route53_zones(c):
+def get_route53_zones(c, zone_type):
     """
     """
-    client = c.GetClient()
-    records = []
-    paginator = client.get_paginator('list_hosted_zones')
-    pages = paginator.paginate()
-    for page in pages:
-        for zone in page['HostedZones']:
-            records.append(hosted_zone(zone))
+
+    records = get_zones(c, [], zone_type)
     return records
 
 
@@ -65,7 +60,7 @@ def list_resource_recordsets(c, zone_id):
             records.append(resource_record(record))
     return records
 
-def get_zones(c, zone_names):
+def get_zones(c, zone_names, zone_type):
     """
     """
     client = c.GetClient()
@@ -74,18 +69,23 @@ def get_zones(c, zone_names):
     pages = paginator.paginate()
     for page in pages:
         for zone in page['HostedZones']:
-            if not zone_names:
+            # apply zone type filters
+            if zone_type == 'public' and zone.get("Config")['PrivateZone']:
+                continue
+            if zone_type == 'private' and not zone.get("Config")['PrivateZone']:
+                continue
+            
+            # apply the name filter
+            if zone['Name'] in zone_names or not zone_names:
                 zones.append(hosted_zone(zone))
-            else:
-                if zone['Name'] in zone_names:
-                    zones.append(hosted_zone(zone))
+
     return zones
 
 
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_resource_records(c, zone_names):
+def get_resource_records(c, zone_names, zone_type):
     """
     """
 
@@ -98,7 +98,7 @@ def get_resource_records(c, zone_names):
         _zone_names.append(name)
 
     records = []
-    zones = get_zones(c, _zone_names)
+    zones = get_zones(c, _zone_names, zone_type)
     for zone in zones:
         zone_name = zone['name']
         zone_records = list_resource_recordsets(c, zone['id'])
@@ -107,11 +107,11 @@ def get_resource_records(c, zone_names):
             # extract the zone id only
             zone_id = os.path.basename(zone['id'])
 
-            # where to set the zone apex flag
+            # move the zone apex record to a decorator?
             apex_alias = 'false'
-            if i["name"] == zone_name.rstrip('.'):
+            if i['type'] == 'A' and i["name"] == zone_name:
                 apex_alias = 'true'
 
-            i.update({"zone_id": zone_id, "zone_name": zone_name, 'apex_alias': apex_alias})
+            i.update({"zone_id": zone_id, "zone_name": zone_name, "private_zone": zone['private_zone'], 'apex_alias': apex_alias})
         records.extend(zone_records)
     return records

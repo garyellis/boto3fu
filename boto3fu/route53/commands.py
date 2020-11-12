@@ -9,7 +9,7 @@ from boto3fu import outputs
 logger = logging.getLogger(__name__)
 
 
-def get_route53_zones(profile, region, boto_client_params, output_format='table'):
+def get_route53_zones(profile, region, boto_client_params, zone_type, output_format='table'):
     """
     """
     if not profile:
@@ -20,10 +20,10 @@ def get_route53_zones(profile, region, boto_client_params, output_format='table'
     clients = client_aggregator(profile, region, 'route53', boto_client_params)
     zones = []
     for c in clients:
-        zones.extend(route53.get_route53_zones(c))
+        zones.extend(route53.get_route53_zones(c, zone_type))
     outputs.output(zones, output_format)
 
-def get_route53_resource_records(profile, region, boto_client_params, output_format='table', zone_names=[]):
+def get_route53_resource_records(profile, region, boto_client_params, zone_type, output_format='table', zone_names=[]):
     """
     """
     if not profile:
@@ -34,5 +34,5 @@ def get_route53_resource_records(profile, region, boto_client_params, output_for
     clients = client_aggregator(profile, region, 'route53', boto_client_params)
     records = []
     for c in clients:
-        records.extend(route53.get_resource_records(c, zone_names))
+        records.extend(route53.get_resource_records(c, zone_names, zone_type))
     outputs.output(records, output_format)

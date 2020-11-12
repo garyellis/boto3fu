@@ -14,14 +14,16 @@ def route53_group(ctx):
 
 @route53_group.command(name="list-zones")
 @add_common_options()
+@click.option('--zone-type', type=click.Choice(['public', 'private', '',]), default='', help='the hosted zone type')
 @click.pass_context
-def report_r53_zones(ctx, output):
+def report_r53_zones(ctx, output, zone_type):
     """
     """
     get_route53_zones(
         profile=ctx.obj["profile"],
         region=ctx.obj["region"],
         boto_client_params=ctx.obj["boto_client_params"],
+        zone_type=zone_type,
         output_format=output,
     )
 
@@ -29,8 +31,9 @@ def report_r53_zones(ctx, output):
 @route53_group.command(name="list-resource-records")
 @add_common_options()
 @click.option('--name', '-n', multiple=True)
+@click.option('--zone-type', type=click.Choice(['public', 'private', '',]), default='', help='the hosted zone type')
 @click.pass_context
-def report_r53_resource_records(ctx, output, name):
+def report_r53_resource_records(ctx, output, name, zone_type):
     """
     """
     get_route53_resource_records(
@@ -38,5 +41,6 @@ def report_r53_resource_records(ctx, output, name):
         region=ctx.obj["region"],
         boto_client_params=ctx.obj["boto_client_params"],
         output_format=output,
-        zone_names=name
+        zone_names=name,
+        zone_type=zone_type
     )
