@@ -72,6 +72,7 @@ def list_resource_recordsets(c, zone_id):
     for page in pages:
         for record in page['ResourceRecordSets']:
             records.append(resource_record(record))
+
     return records
 
 def get_zones(c, zone_names, zone_type):
@@ -99,7 +100,7 @@ def get_zones(c, zone_names, zone_type):
 @helpers.add_account_alias
 @helpers.add_account_num
 @helpers.add_client_region
-def get_resource_records(c, zone_names, zone_type):
+def get_resource_records(c, zone_names, zone_type, r53_policy_type, record_type):
     """
     """
 
@@ -114,9 +115,11 @@ def get_resource_records(c, zone_names, zone_type):
     records = []
     zones = get_zones(c, _zone_names, zone_type)
     for zone in zones:
+
+        # add the zone info and apex alias fields to the records
         zone_name = zone['name']
-        zone_records = list_resource_recordsets(c, zone['id'])
-        for i in zone_records:
+        _zone_records = list_resource_recordsets(c, zone['id'])
+        for i in _zone_records:
 
             # extract the zone id only
             zone_id = os.path.basename(zone['id'])
@@ -127,5 +130,20 @@ def get_resource_records(c, zone_names, zone_type):
                 apex_alias = 'true'
 
             i.update({"zone_id": zone_id, "zone_name": zone_name, "private_zone": zone['private_zone'], 'apex_alias': apex_alias})
+
+        # apply filters on the zone records
+        zone_records = []
+        for i in _zone_records:
+            # filter by the route53 policy type
+            if r53_policy_type and i['r53_type'] not in r53_policy_type:
+                continue
+            
+            # filter by the dns record type
+            if record_type and i['type'] not in record_type:
+                continue
+
+            zone_records.append(i)
+
         records.extend(zone_records)
+
     return records

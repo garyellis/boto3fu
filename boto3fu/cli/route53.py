@@ -32,8 +32,10 @@ def report_r53_zones(ctx, output, zone_type):
 @add_common_options()
 @click.option('--name', '-n', multiple=True)
 @click.option('--zone-type', type=click.Choice(['public', 'private', '',]), default='', help='the hosted zone type')
+@click.option('--r53-policy-type', '-rt', multiple=True, help='filter by the route53 record policy type')
+@click.option('--record-type', '-t', multiple=True, help='filter by the dns record type')
 @click.pass_context
-def report_r53_resource_records(ctx, output, name, zone_type):
+def report_r53_resource_records(ctx, output, name, zone_type, r53_policy_type, record_type):
     """
     """
     get_route53_resource_records(
@@ -42,5 +44,7 @@ def report_r53_resource_records(ctx, output, name, zone_type):
         boto_client_params=ctx.obj["boto_client_params"],
         output_format=output,
         zone_names=name,
-        zone_type=zone_type
+        zone_type=zone_type,
+        r53_policy_type=r53_policy_type,
+        record_type=record_type
     )
